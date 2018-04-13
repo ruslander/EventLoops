@@ -13,6 +13,11 @@ public class RouteMessagesToHandlersTest {
     public void route() {
     }
 
+    @Test
+    public void register_handlers2(){
+        MessageHandlerTable table = new MessageHandlerTable();
+        table.registerAs(messageBus ->  new PingHandler2(messageBus), Ping.class);
+    }
 
 
     @Test
@@ -40,6 +45,19 @@ public class RouteMessagesToHandlersTest {
     }
 
     public class PingHandler implements HandleMessages<Ping>{
+        @Override
+        public void handle(Ping message) {
+
+        }
+    }
+
+    public class PingHandler2 implements HandleMessages<Ping>{
+        private MessageBus messageBus;
+
+        public PingHandler2(MessageBus messageBus) {
+            this.messageBus = messageBus;
+        }
+
         @Override
         public void handle(Ping message) {
 

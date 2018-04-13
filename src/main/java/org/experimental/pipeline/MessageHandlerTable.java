@@ -1,9 +1,12 @@
 package org.experimental.pipeline;
 
+import org.experimental.MessageBus;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class MessageHandlerTable {
@@ -34,4 +37,10 @@ public class MessageHandlerTable {
     public Map<Class, List<HandleMessages<Object>>> getHandlers() {
         return handlers;
     }
+
+    public <T> void registerAs(Function<MessageBus, HandleMessages<T>> handler, Class<T> c) {
+
+        //Object ooo = (Function<MessageBus, HandleMessages<Object>>)handler;
+    }
+
 }
