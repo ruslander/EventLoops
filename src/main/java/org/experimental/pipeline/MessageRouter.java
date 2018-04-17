@@ -1,5 +1,6 @@
 package org.experimental.pipeline;
 
+import org.experimental.MessageBus;
 import org.experimental.MessageEnvelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,7 @@ public class MessageRouter implements RouteMessagesToHandlers {
     @Override
     public void Route(MessageEnvelope message) {
         try{
-            HandleMessages<Object> handler = this.handlers.getHandlers(message.getLocalMessage());
+            HandleMessages<Object> handler = this.handlers.getHandlers(new MessageBus(), message.getLocalMessage());
 
             if(handler == null){
                 String simpleName = message.getLocalMessage().getClass().toString();

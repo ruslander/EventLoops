@@ -38,7 +38,7 @@ public class BusShapingTest extends Env {
         AtomicInteger cnt = new AtomicInteger();
 
         MessageHandlerTable table = new MessageHandlerTable();
-        table.addHandler(Ping.class, message -> {
+        table.addHandler(Ping.class, bus -> message -> {
             cnt.getAndIncrement();
             System.out.println("intercept ****** " + message);
 
