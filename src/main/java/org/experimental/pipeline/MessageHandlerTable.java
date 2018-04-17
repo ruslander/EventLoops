@@ -20,7 +20,7 @@ public class MessageHandlerTable {
         return null;
     }
 
-    public <T> void addHandler(Class<T> c, Function<MessageBus, HandleMessages<T>> handler) {
+    public <T> void registerHandler(Class<T> c, Function<MessageBus, HandleMessages<T>> handler) {
         if(!handlers.containsKey(c)){
             handlers.put(c, messageBus -> handler.apply(messageBus));
         }

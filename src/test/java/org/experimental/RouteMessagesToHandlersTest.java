@@ -27,7 +27,7 @@ public class RouteMessagesToHandlersTest {
         AtomicInteger cnt = new AtomicInteger(0);
 
         MessageHandlerTable table = new MessageHandlerTable();
-        table.addHandler(Ping.class, messageBus -> message -> cnt.incrementAndGet());
+        table.registerHandler(Ping.class, messageBus -> message -> cnt.incrementAndGet());
         MessageRouter router = new MessageRouter(table);
 
         router.Route(envelope);
@@ -46,7 +46,7 @@ public class RouteMessagesToHandlersTest {
     @Test
     public void will_get_registered_handler(){
         MessageHandlerTable table = new MessageHandlerTable();
-        table.addHandler(Ping.class, messageBus -> new PingHandler());
+        table.registerHandler(Ping.class, messageBus -> new PingHandler());
 
         HandleMessages<Object> hndl = table.getHandlers(new MessageBus(), new Ping());
 
@@ -56,7 +56,7 @@ public class RouteMessagesToHandlersTest {
     @Test
     public void factory_check(){
         MessageHandlerTable table = new MessageHandlerTable();
-        table.addHandler(Ping.class, messageBus ->  new PingHandler());
+        table.registerHandler(Ping.class, messageBus ->  new PingHandler());
 
         Ping ping = new Ping();
         MessageBus bus = new MessageBus();

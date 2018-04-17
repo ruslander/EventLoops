@@ -1,16 +1,11 @@
 package org.experimental;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.experimental.lab.SingleNodeKafkaCluster;
 import org.experimental.pipeline.MessageHandlerTable;
 import org.experimental.pipeline.MessageRouter;
-import org.experimental.pipeline.RouteMessagesToHandlers;
 import org.testng.Assert;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,7 +33,7 @@ public class BusShapingTest extends Env {
         AtomicInteger cnt = new AtomicInteger();
 
         MessageHandlerTable table = new MessageHandlerTable();
-        table.addHandler(Ping.class, bus -> message -> {
+        table.registerHandler(Ping.class, bus -> message -> {
             cnt.getAndIncrement();
             System.out.println("intercept ****** " + message);
 
