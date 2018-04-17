@@ -18,13 +18,13 @@ public class MessageHandlerTable {
         return null;
     }
 
-    public <T> void addHandler(HandleMessages<T> handler, Class<T> c) {
+    public <T> void addHandler(Class<T> c, HandleMessages<T> handler) {
         if(!handlers.containsKey(c)){
             handlers.put(c, () -> handler);
         }
     }
 
-    public <T> void addHandler(Supplier<HandleMessages<T>> handler, Class<T> c) {
+    public <T> void addHandler(Class<T> c, Supplier<HandleMessages<T>> handler) {
         if(!handlers.containsKey(c)){
             handlers.put(c, () -> handler.get());
         }
