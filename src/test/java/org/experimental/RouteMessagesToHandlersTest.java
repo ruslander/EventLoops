@@ -2,44 +2,66 @@ package org.experimental;
 
 import org.experimental.pipeline.HandleMessages;
 import org.experimental.pipeline.MessageHandlerTable;
+import org.experimental.pipeline.MessageRouter;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.List;
-import java.util.Map;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RouteMessagesToHandlersTest {
-    @Test
-    public void route() {
-    }
+
+    MessageEnvelope envelope = new MessageEnvelope(UUID.randomUUID(), "", new HashMap<>(), new Ping());
 
     @Test
-    public void register_handlers2(){
+    public void when_no_handler_registered_will_noop(){
         MessageHandlerTable table = new MessageHandlerTable();
-        table.registerAs(messageBus ->  new PingHandler2(messageBus), Ping.class);
+        MessageRouter router = new MessageRouter(table);
+
+        router.Route(envelope);
     }
 
+    @Test
+    public void will_invoke_associated_hadler(){
+        AtomicInteger cnt = new AtomicInteger(0);
+
+        MessageHandlerTable table = new MessageHandlerTable();
+        table.addHandler(message -> cnt.incrementAndGet(), Ping.class);
+        MessageRouter router = new MessageRouter(table);
+
+        router.Route(envelope);
+
+        Assert.assertEquals(cnt.get(), 1);
+    }
 
     @Test
-    public void register_handlers(){
+    public void no_handler_will_give_null(){
+        MessageHandlerTable table = new MessageHandlerTable();
+        HandleMessages<Object> hndl = table.getHandlers(new Ping());
+
+        Assert.assertNull(hndl);
+    }
+
+    @Test
+    public void will_get_registered_handler(){
+        MessageHandlerTable table = new MessageHandlerTable();
+        table.addHandler(new PingHandler(), Ping.class);
+
+        HandleMessages<Object> hndl = table.getHandlers(new Ping());
+
+        Assert.assertNotNull(hndl);
+    }
+
+    @Test
+    public void factory_check(){
         MessageHandlerTable table = new MessageHandlerTable();
         table.addHandler(() -> new PingHandler(), Ping.class);
 
-        Map<Class, List<HandleMessages<Object>>> handlers = table.getHandlers();
+        Ping ping = new Ping();
 
-        Assert.assertNotNull(handlers.get(Ping.class));
+        Assert.assertNotEquals(table.getHandlers(ping), table.getHandlers(ping));
     }
-
-    @Test
-    public void get_for_no_handlers(){
-        MessageHandlerTable table = new MessageHandlerTable();
-
-        List<HandleMessages<Object>> handlers = table.getHandlers(new Ping());
-
-        Assert.assertNotNull(handlers);
-        Assert.assertEquals(handlers.size(), 0);
-    }
-
 
     public class Ping{
     }

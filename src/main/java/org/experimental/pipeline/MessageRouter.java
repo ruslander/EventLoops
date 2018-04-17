@@ -1,12 +1,14 @@
 package org.experimental.pipeline;
 
 import org.experimental.MessageEnvelope;
-
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MessageRouter implements RouteMessagesToHandlers {
 
     private MessageHandlerTable handlers;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessageRouter.class);
+
 
     public MessageRouter(MessageHandlerTable handlers) {
         this.handlers = handlers;
@@ -15,11 +17,15 @@ public class MessageRouter implements RouteMessagesToHandlers {
     @Override
     public void Route(MessageEnvelope message) {
         try{
-            List<HandleMessages<Object>> handlers = this.handlers.getHandlers(message.getLocalMessage());
+            HandleMessages<Object> handler = this.handlers.getHandlers(message.getLocalMessage());
 
-            for (HandleMessages<Object> handler: handlers){
-                handler.handle(message.getLocalMessage());
+            if(handler == null){
+                String simpleName = message.getLocalMessage().getClass().toString();
+                LOGGER.warn("No handler registered for {}", simpleName);
+                return;
             }
+
+            handler.handle(message.getLocalMessage());
         }catch (Exception e){
             throw e;
         }

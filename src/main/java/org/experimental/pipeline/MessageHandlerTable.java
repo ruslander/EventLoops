@@ -1,46 +1,39 @@
 package org.experimental.pipeline;
 
-import org.experimental.MessageBus;
-
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class MessageHandlerTable {
 
-    private Map<Class, List<HandleMessages<Object>>> handlers = new HashMap<>();
+    private Map<Class<?>, Supplier<HandleMessages<?>>> handlers = new HashMap<>();
 
-    public List<HandleMessages<Object>> getHandlers(Object message){
+    public HandleMessages<Object> getHandlers(Object message){
 
         if(handlers.containsKey(message.getClass())){
-            return handlers.get(message.getClass());
+            Supplier<HandleMessages<?>> factory = handlers.get(message.getClass());
+            return (HandleMessages<Object>) factory.get();
         }
 
-        return new ArrayList<>();
+        return null;
+    }
+
+    public <T> void addHandler(HandleMessages<T> handler, Class<T> c) {
+        if(!handlers.containsKey(c)){
+            handlers.put(c, () -> handler);
+        }
     }
 
     public <T> void addHandler(Supplier<HandleMessages<T>> handler, Class<T> c) {
-        ArrayList<HandleMessages<Object>> routes = new ArrayList<>();
-
         if(!handlers.containsKey(c)){
-            handlers.put(c, routes);
-        }else {
-            routes = (ArrayList<HandleMessages<Object>>)handlers.get(c);
+            handlers.put(c, () -> handler.get());
         }
-
-        routes.add((HandleMessages<Object>)handler);
     }
 
-    public Map<Class, List<HandleMessages<Object>>> getHandlers() {
-        return handlers;
-    }
-
+/*
     public <T> void registerAs(Function<MessageBus, HandleMessages<T>> handler, Class<T> c) {
-
         //Object ooo = (Function<MessageBus, HandleMessages<Object>>)handler;
     }
+*/
 
 }
