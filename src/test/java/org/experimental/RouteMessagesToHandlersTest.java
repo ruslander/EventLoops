@@ -3,6 +3,7 @@ package org.experimental;
 import org.experimental.pipeline.HandleMessages;
 import org.experimental.pipeline.MessageHandlerTable;
 import org.experimental.pipeline.MessageRouter;
+import org.experimental.transport.KafkaMessageSender;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -10,14 +11,19 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.mockito.Mockito.mock;
+
 public class RouteMessagesToHandlersTest {
 
     MessageEnvelope envelope = new MessageEnvelope(UUID.randomUUID(), "", new HashMap<>(), new Ping());
+    KafkaMessageSender sender = mock(KafkaMessageSender.class);
+    MessageBus bus = mock(MessageBus.class);
+    EndpointId endpointId = new EndpointId("");
 
     @Test
     public void when_no_handler_registered_will_noop(){
         MessageHandlerTable table = new MessageHandlerTable();
-        MessageRouter router = new MessageRouter(table);
+        MessageRouter router = new MessageRouter(table, sender, endpointId);
 
         router.Route(envelope);
     }
@@ -28,7 +34,7 @@ public class RouteMessagesToHandlersTest {
 
         MessageHandlerTable table = new MessageHandlerTable();
         table.registerHandler(Ping.class, messageBus -> message -> cnt.incrementAndGet());
-        MessageRouter router = new MessageRouter(table);
+        MessageRouter router = new MessageRouter(table, sender, endpointId);
 
         router.Route(envelope);
 
@@ -38,7 +44,7 @@ public class RouteMessagesToHandlersTest {
     @Test
     public void no_handler_will_give_null(){
         MessageHandlerTable table = new MessageHandlerTable();
-        HandleMessages<Object> hndl = table.getHandlers(new MessageBus(), new Ping());
+        HandleMessages<Object> hndl = table.getHandlers(bus, new Ping());
 
         Assert.assertNull(hndl);
     }
@@ -48,7 +54,7 @@ public class RouteMessagesToHandlersTest {
         MessageHandlerTable table = new MessageHandlerTable();
         table.registerHandler(Ping.class, messageBus -> new PingHandler());
 
-        HandleMessages<Object> hndl = table.getHandlers(new MessageBus(), new Ping());
+        HandleMessages<Object> hndl = table.getHandlers(bus, new Ping());
 
         Assert.assertNotNull(hndl);
     }
@@ -59,7 +65,6 @@ public class RouteMessagesToHandlersTest {
         table.registerHandler(Ping.class, messageBus ->  new PingHandler());
 
         Ping ping = new Ping();
-        MessageBus bus = new MessageBus();
 
         Assert.assertNotEquals(table.getHandlers(bus, ping), table.getHandlers(bus, ping));
     }

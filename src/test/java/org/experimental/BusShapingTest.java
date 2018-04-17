@@ -1,8 +1,10 @@
 package org.experimental;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.experimental.pipeline.HandleMessages;
 import org.experimental.pipeline.MessageHandlerTable;
 import org.experimental.pipeline.MessageRouter;
+import org.experimental.transport.KafkaMessageSender;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -16,13 +18,31 @@ public class BusShapingTest extends Env {
             "\"uuid\":\"9fb046d0-4318-4f2e-8ec3-0152449ebe7d\"," +
             "\"headers\":{}," +
             "\"content\":{" +
-            "\"returnAddress\":\"\"," +
+            "\"returnAddress\":\"c2\"," +
             "\"type\":\"org.experimental.BusShapingTest$Ping\"," +
             "\"payload\":\"{}\"" +
             "}" +
             "}\n";
 
     public class Ping{}
+    public class Pong{}
+
+    public class PingHandler implements HandleMessages<Ping>{
+
+        private MessageBus bus;
+        private AtomicInteger cnt;
+
+        public PingHandler(MessageBus bus, AtomicInteger cnt) {
+            this.bus = bus;
+            this.cnt = cnt;
+        }
+
+        @Override
+        public void handle(Ping message) {
+            cnt.incrementAndGet();
+            bus.reply(new Pong());
+        }
+    }
 
     @Test
     public void inbound() throws InterruptedException {
@@ -33,19 +53,19 @@ public class BusShapingTest extends Env {
         AtomicInteger cnt = new AtomicInteger();
 
         MessageHandlerTable table = new MessageHandlerTable();
-        table.registerHandler(Ping.class, bus -> message -> {
-            cnt.getAndIncrement();
-            System.out.println("intercept ****** " + message);
+        table.registerHandler(Ping.class, bus -> new PingHandler(bus, cnt));
 
-        });
+        EndpointId endpointId = new EndpointId("c1");
 
-        MessageRouter router = new MessageRouter(table);
+        KafkaMessageSender messageSender = new KafkaMessageSender(kfk);
+        messageSender.start();
+        MessageRouter router = new MessageRouter(table, messageSender, endpointId);
 
         try(ManagedEventLoop loop = new ManagedEventLoop(loopName, kfk, inputTopics, router)){
 
             CLUSTER.sendMessages(new ProducerRecord<>("c1", env));
 
-            Thread.sleep(3000);
+            Thread.sleep(4000);
 
             Assert.assertEquals(cnt.get(), 1);
         }
