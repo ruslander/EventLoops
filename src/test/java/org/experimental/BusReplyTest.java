@@ -9,36 +9,14 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 public class BusReplyTest extends Env {
 
-    private String env = "{" +
-            "\"uuid\":\"9fb046d0-4318-4f2e-8ec3-0152449ebe7d\"," +
-            "\"headers\":{}," +
-            "\"content\":{" +
-            "\"returnAddress\":\"c2\"," +
-            "\"type\":\"org.experimental.BusReplyTest$Ping\"," +
-            "\"payload\":\"{}\"" +
-            "}" +
-            "}\n";
-
     public class Ping{}
     public class Pong{}
-
-    public class PingHandler implements HandleMessages<Ping>{
-
-        private MessageBus bus;
-
-        public PingHandler(MessageBus bus) {
-            this.bus = bus;
-        }
-
-        @Override
-        public void handle(Ping message) {
-            bus.reply(new Pong());
-        }
-    }
 
     @Test
     public void inbound() throws InterruptedException {
@@ -47,18 +25,27 @@ public class BusReplyTest extends Env {
         List<String> inputTopics = Arrays.asList("c1");
 
 
+        UnicastRouter router = new UnicastRouter();
         MessageHandlerTable table = new MessageHandlerTable();
-        table.registerHandler(Ping.class, bus -> new PingHandler(bus));
 
         EndpointId endpointId = new EndpointId("c1");
 
         KafkaMessageSender messageSender = new KafkaMessageSender(kfk);
         messageSender.start();
-        MessagePipeline pipeline = new MessagePipeline(table, messageSender, endpointId, new UnicastRouter());
+
+        MessagePipeline pipeline = new MessagePipeline(table, messageSender, endpointId, router);
 
         try(ManagedEventLoop loop = new ManagedEventLoop(loopName, kfk, inputTopics, pipeline)){
 
-            CLUSTER.sendMessages(new ProducerRecord<>("c1", env));
+            MessageEnvelope envelope = new MessageEnvelope(
+                    UUID.randomUUID(),
+                    "c2",
+                    new HashMap<>(),
+                    new Ping()
+            );
+            MessageBus bus = pipeline.netMessageBus(envelope);
+
+            bus.reply(new Pong());
 
             Thread.sleep(4000);
 
