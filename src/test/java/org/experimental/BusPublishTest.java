@@ -3,14 +3,13 @@ package org.experimental;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.experimental.pipeline.HandleMessages;
 import org.experimental.pipeline.MessageHandlerTable;
-import org.experimental.pipeline.MessageRouter;
+import org.experimental.pipeline.MessagePipeline;
 import org.experimental.transport.KafkaMessageSender;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class BusPublishTest extends Env {
 
@@ -52,7 +51,7 @@ public class BusPublishTest extends Env {
 
         KafkaMessageSender messageSender = new KafkaMessageSender(kfk);
         messageSender.start();
-        MessageRouter router = new MessageRouter(table, messageSender, endpointId);
+        MessagePipeline router = new MessagePipeline(table, messageSender, endpointId, new UnicastRouter());
 
         String loopName = "trading-day-controller";
         List<String> eventLoopTopic = Arrays.asList(loopName);

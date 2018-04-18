@@ -13,14 +13,16 @@ public class MessageBus {
     private MessageEnvelope envelope;
     private EndpointId endpointId;
     private MessageBuilder builder;
+    private UnicastRouter router;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageBus.class);
 
-    public MessageBus(KafkaMessageSender transport, MessageEnvelope envelope, EndpointId endpointId) {
+    public MessageBus(KafkaMessageSender transport, MessageEnvelope envelope, EndpointId endpointId, UnicastRouter router) {
         this.transport = transport;
         this.envelope = envelope;
         this.endpointId = endpointId;
         this.builder = new MessageBuilder(endpointId.getInputTopicName());
+        this.router = router;
     }
 
     public void publish(Object message) {
@@ -32,11 +34,11 @@ public class MessageBus {
     }
 
     public void send(Object message) {
-        /*List<String> dest = recipients.get(message.getClass());
+        List<String> dest = router.destinations(message.getClass());
         MessageEnvelope envelope = builder.buildMessage(message);
-        transport.send(dest, envelope);*/
+        transport.send(dest, envelope);
 
-        LOGGER.warn("Sent {} FIX ME", message.getClass().getSimpleName());
+        LOGGER.info("Sent {} ", message.getClass().getSimpleName());
     }
 
     public void reply(Object message) {

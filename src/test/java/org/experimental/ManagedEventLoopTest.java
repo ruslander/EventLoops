@@ -2,7 +2,7 @@ package org.experimental;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.experimental.lab.SingleNodeKafkaCluster;
-import org.experimental.pipeline.RouteMessagesToHandlers;
+import org.experimental.pipeline.DispatchMessagesToHandlers;
 import org.testng.Assert;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
@@ -58,7 +58,7 @@ public class ManagedEventLoopTest {
         List<String> inputTopics = Arrays.asList("c1");
 
         AtomicInteger cnt = new AtomicInteger();
-        RouteMessagesToHandlers handlers = message -> {
+        DispatchMessagesToHandlers handlers = message -> {
             cnt.getAndIncrement();
             System.out.println("intercept ****** " + message.getUuid());
         };

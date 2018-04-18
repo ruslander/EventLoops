@@ -2,7 +2,7 @@ package org.experimental;
 
 import org.experimental.pipeline.HandleMessages;
 import org.experimental.pipeline.MessageHandlerTable;
-import org.experimental.pipeline.MessageRouter;
+import org.experimental.pipeline.MessagePipeline;
 import org.experimental.transport.KafkaMessageSender;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -13,19 +13,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.mockito.Mockito.mock;
 
-public class RouteMessagesToHandlersTest {
+public class DispatchMessagesToHandlersTest {
 
     MessageEnvelope envelope = new MessageEnvelope(UUID.randomUUID(), "", new HashMap<>(), new Ping());
     KafkaMessageSender sender = mock(KafkaMessageSender.class);
     MessageBus bus = mock(MessageBus.class);
     EndpointId endpointId = new EndpointId("");
+    UnicastRouter router = mock(UnicastRouter.class);
 
     @Test
     public void when_no_handler_registered_will_noop(){
         MessageHandlerTable table = new MessageHandlerTable();
-        MessageRouter router = new MessageRouter(table, sender, endpointId);
+        MessagePipeline pipeline = new MessagePipeline(table, sender, endpointId, router);
 
-        router.Route(envelope);
+        pipeline.dispatch(envelope);
     }
 
     @Test
@@ -34,9 +35,9 @@ public class RouteMessagesToHandlersTest {
 
         MessageHandlerTable table = new MessageHandlerTable();
         table.registerHandler(Ping.class, messageBus -> message -> cnt.incrementAndGet());
-        MessageRouter router = new MessageRouter(table, sender, endpointId);
+        MessagePipeline pipeline = new MessagePipeline(table, sender, endpointId, router);
 
-        router.Route(envelope);
+        pipeline.dispatch(envelope);
 
         Assert.assertEquals(cnt.get(), 1);
     }

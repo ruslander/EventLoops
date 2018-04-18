@@ -3,14 +3,13 @@ package org.experimental;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.experimental.pipeline.HandleMessages;
 import org.experimental.pipeline.MessageHandlerTable;
-import org.experimental.pipeline.MessageRouter;
+import org.experimental.pipeline.MessagePipeline;
 import org.experimental.transport.KafkaMessageSender;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class BusReplyTest extends Env {
 
@@ -55,9 +54,9 @@ public class BusReplyTest extends Env {
 
         KafkaMessageSender messageSender = new KafkaMessageSender(kfk);
         messageSender.start();
-        MessageRouter router = new MessageRouter(table, messageSender, endpointId);
+        MessagePipeline pipeline = new MessagePipeline(table, messageSender, endpointId, new UnicastRouter());
 
-        try(ManagedEventLoop loop = new ManagedEventLoop(loopName, kfk, inputTopics, router)){
+        try(ManagedEventLoop loop = new ManagedEventLoop(loopName, kfk, inputTopics, pipeline)){
 
             CLUSTER.sendMessages(new ProducerRecord<>("c1", env));
 

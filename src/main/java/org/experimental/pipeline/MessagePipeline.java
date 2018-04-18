@@ -3,28 +3,30 @@ package org.experimental.pipeline;
 import org.experimental.EndpointId;
 import org.experimental.MessageBus;
 import org.experimental.MessageEnvelope;
+import org.experimental.UnicastRouter;
 import org.experimental.transport.KafkaMessageSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MessageRouter implements RouteMessagesToHandlers {
+public class MessagePipeline implements DispatchMessagesToHandlers {
 
     private MessageHandlerTable handlers;
     private KafkaMessageSender sender;
     private EndpointId endpointId;
-    private static final Logger LOGGER = LoggerFactory.getLogger(MessageRouter.class);
+    private UnicastRouter router;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessagePipeline.class);
 
-
-    public MessageRouter(MessageHandlerTable handlers, KafkaMessageSender sender, EndpointId endpointId) {
+    public MessagePipeline(MessageHandlerTable handlers, KafkaMessageSender sender, EndpointId endpointId, UnicastRouter router) {
         this.handlers = handlers;
         this.sender = sender;
         this.endpointId = endpointId;
+        this.router = router;
     }
 
     @Override
-    public void Route(MessageEnvelope message) {
+    public void dispatch(MessageEnvelope message) {
         try{
-            MessageBus messageBus = new MessageBus(sender, message, endpointId);
+            MessageBus messageBus = netMessageBus(message);
             HandleMessages<Object> handler = this.handlers.getHandlers(messageBus, message.getLocalMessage());
 
             if(handler == null){
@@ -37,5 +39,9 @@ public class MessageRouter implements RouteMessagesToHandlers {
         }catch (Exception e){
             throw e;
         }
+    }
+
+    public MessageBus netMessageBus(MessageEnvelope message) {
+        return new MessageBus(sender, message, endpointId, router);
     }
 }

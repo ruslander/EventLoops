@@ -1,7 +1,7 @@
 package org.experimental;
 
 import org.apache.kafka.common.errors.InterruptException;
-import org.experimental.pipeline.RouteMessagesToHandlers;
+import org.experimental.pipeline.DispatchMessagesToHandlers;
 import org.experimental.transport.KafkaMessageReceiver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,12 +13,12 @@ public class ManagedEventLoop implements Closeable {
     private String name;
     private final String kafka;
     private final List<String> inputTopics;
-    private RouteMessagesToHandlers router;
+    private DispatchMessagesToHandlers router;
     private Thread worker;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedEventLoop.class);
 
-    public ManagedEventLoop(String name, String kafka, List<String> inputTopics, RouteMessagesToHandlers router) {
+    public ManagedEventLoop(String name, String kafka, List<String> inputTopics, DispatchMessagesToHandlers router) {
         this.name = name;
         this.kafka = kafka;
         this.inputTopics = inputTopics;
@@ -49,7 +49,7 @@ public class ManagedEventLoop implements Closeable {
 
                 for (MessageEnvelope env: messages) {
                     LOGGER.debug("Dispatch to router {}", router.getClass().getSimpleName());
-                    router.Route(env);
+                    router.dispatch(env);
                     LOGGER.debug("Dispatch completed");
                 }
             } catch (InterruptException e) {
