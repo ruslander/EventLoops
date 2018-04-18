@@ -1,9 +1,9 @@
 package org.experimental;
 
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.experimental.pipeline.HandleMessages;
 import org.experimental.pipeline.MessageHandlerTable;
 import org.experimental.pipeline.MessagePipeline;
+import org.experimental.runtime.ManagedEventLoop;
+import org.experimental.directions.MessageDestinations;
 import org.experimental.transport.KafkaMessageSender;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -25,7 +25,7 @@ public class BusReplyTest extends Env {
         List<String> inputTopics = Arrays.asList("c1");
 
 
-        UnicastRouter router = new UnicastRouter();
+        MessageDestinations router = new MessageDestinations();
         MessageHandlerTable table = new MessageHandlerTable();
 
         EndpointId endpointId = new EndpointId("c1");

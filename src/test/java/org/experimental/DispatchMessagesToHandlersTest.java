@@ -3,6 +3,7 @@ package org.experimental;
 import org.experimental.pipeline.HandleMessages;
 import org.experimental.pipeline.MessageHandlerTable;
 import org.experimental.pipeline.MessagePipeline;
+import org.experimental.directions.MessageDestinations;
 import org.experimental.transport.KafkaMessageSender;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -19,7 +20,7 @@ public class DispatchMessagesToHandlersTest {
     KafkaMessageSender sender = mock(KafkaMessageSender.class);
     MessageBus bus = mock(MessageBus.class);
     EndpointId endpointId = new EndpointId("");
-    UnicastRouter router = mock(UnicastRouter.class);
+    MessageDestinations router = mock(MessageDestinations.class);
 
     @Test
     public void when_no_handler_registered_will_noop(){

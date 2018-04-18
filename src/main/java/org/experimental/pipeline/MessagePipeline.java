@@ -3,7 +3,7 @@ package org.experimental.pipeline;
 import org.experimental.EndpointId;
 import org.experimental.MessageBus;
 import org.experimental.MessageEnvelope;
-import org.experimental.UnicastRouter;
+import org.experimental.directions.MessageDestinations;
 import org.experimental.transport.KafkaMessageSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,10 +13,10 @@ public class MessagePipeline implements DispatchMessagesToHandlers {
     private MessageHandlerTable handlers;
     private KafkaMessageSender sender;
     private EndpointId endpointId;
-    private UnicastRouter router;
+    private MessageDestinations router;
     private static final Logger LOGGER = LoggerFactory.getLogger(MessagePipeline.class);
 
-    public MessagePipeline(MessageHandlerTable handlers, KafkaMessageSender sender, EndpointId endpointId, UnicastRouter router) {
+    public MessagePipeline(MessageHandlerTable handlers, KafkaMessageSender sender, EndpointId endpointId, MessageDestinations router) {
         this.handlers = handlers;
         this.sender = sender;
         this.endpointId = endpointId;

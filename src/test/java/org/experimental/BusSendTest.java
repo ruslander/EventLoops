@@ -2,6 +2,8 @@ package org.experimental;
 
 import org.experimental.pipeline.MessageHandlerTable;
 import org.experimental.pipeline.MessagePipeline;
+import org.experimental.runtime.ManagedEventLoop;
+import org.experimental.directions.MessageDestinations;
 import org.experimental.transport.KafkaMessageSender;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -24,7 +26,7 @@ public class BusSendTest extends Env {
         messageSender.start();
 
         MessageHandlerTable handlers = new MessageHandlerTable();
-        UnicastRouter router = new UnicastRouter();
+        MessageDestinations router = new MessageDestinations();
         router.registerEndpoint("stove-owen", TurnOff.class);
 
         MessagePipeline pipeline = new MessagePipeline(handlers, messageSender, endpointId, router);

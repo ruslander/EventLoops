@@ -1,6 +1,7 @@
-package org.experimental;
+package org.experimental.runtime;
 
 import org.apache.kafka.common.errors.InterruptException;
+import org.experimental.MessageEnvelope;
 import org.experimental.pipeline.DispatchMessagesToHandlers;
 import org.experimental.transport.KafkaMessageReceiver;
 import org.slf4j.Logger;

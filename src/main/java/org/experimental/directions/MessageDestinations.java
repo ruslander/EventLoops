@@ -1,22 +1,24 @@
-package org.experimental;
+package org.experimental.directions;
+
+import org.experimental.EndpointId;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class UnicastRouter {
+public class MessageDestinations {
 
-    HashMap<Type, List<String>> recipients = new HashMap<>();
+    HashMap<Type, List<String>> destinations = new HashMap<>();
 
     public void registerEndpoint(String endpointId, Class<?> ... aClass) {
         for(Class<?> cl : aClass){
             ArrayList<String> routes = new ArrayList<>();
 
-            if(!recipients.containsKey(cl)){
-                recipients.put(cl, routes);
+            if(!destinations.containsKey(cl)){
+                destinations.put(cl, routes);
             }else {
-                routes = (ArrayList<String>)recipients.get(cl);
+                routes = (ArrayList<String>) destinations.get(cl);
             }
 
             String inputTopicName = new EndpointId(endpointId).getInputTopicName();
@@ -25,8 +27,8 @@ public class UnicastRouter {
     }
 
     public List<String> destinations(Class<?> type){
-        if(recipients.containsKey(type))
-            return recipients.get(type);
+        if(destinations.containsKey(type))
+            return destinations.get(type);
 
         return new ArrayList<>();
     }

@@ -3,6 +3,7 @@ package org.experimental;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.experimental.lab.SingleNodeKafkaCluster;
 import org.experimental.pipeline.DispatchMessagesToHandlers;
+import org.experimental.runtime.ManagedEventLoop;
 import org.testng.Assert;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;

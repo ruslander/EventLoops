@@ -1,5 +1,6 @@
 package org.experimental;
 
+import org.experimental.directions.MessageDestinations;
 import org.experimental.transport.KafkaMessageSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,11 +14,11 @@ public class MessageBus {
     private MessageEnvelope envelope;
     private EndpointId endpointId;
     private MessageBuilder builder;
-    private UnicastRouter router;
+    private MessageDestinations router;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageBus.class);
 
-    public MessageBus(KafkaMessageSender transport, MessageEnvelope envelope, EndpointId endpointId, UnicastRouter router) {
+    public MessageBus(KafkaMessageSender transport, MessageEnvelope envelope, EndpointId endpointId, MessageDestinations router) {
         this.transport = transport;
         this.envelope = envelope;
         this.endpointId = endpointId;
