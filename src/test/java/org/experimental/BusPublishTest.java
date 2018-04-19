@@ -14,7 +14,7 @@ public class BusPublishTest extends Env {
     @Test
     public void inbound() throws InterruptedException, IOException {
 
-        try(EndpointWire wire = new EndpointWire("trading-day-controller", CLUSTER.getKafkaConnect())){
+        try(EndpointWire wire = new EndpointWire("trading-day-controller", CLUSTER.getKafkaConnect(),CLUSTER.getZookeeperString())){
             wire.configure();
 
             MessageBus bus = wire.getMessageBus();

@@ -33,7 +33,7 @@ public class BusSubscribeTest extends Env {
     @Test
     public void inbound() throws InterruptedException, IOException {
 
-        try(EndpointWire wire = new EndpointWire("c1", CLUSTER.getKafkaConnect())){
+        try(EndpointWire wire = new EndpointWire("c1", CLUSTER.getKafkaConnect(), CLUSTER.getZookeeperString())){
             AtomicInteger cnt = new AtomicInteger();
             wire.subscribeToEndpoint("u1", Tick.class);
             wire.registerHandler(Tick.class, bus -> message -> cnt.incrementAndGet());

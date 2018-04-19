@@ -24,8 +24,6 @@ public class ManagedEventLoop implements Closeable {
         this.kafka = kafka;
         this.inputTopics = inputTopics;
         this.router = router;
-
-
     }
 
     public void start(){

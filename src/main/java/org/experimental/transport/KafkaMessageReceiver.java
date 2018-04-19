@@ -1,6 +1,5 @@
 package org.experimental.transport;
 
-import com.google.gson.Gson;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -14,7 +13,6 @@ import java.util.Properties;
 
 public class KafkaMessageReceiver {
     private  KafkaConsumer<String, TransportRecord> consumer;
-    private final Gson recordGson = new Gson();
     private final Properties props;
     private final List<String> topics;
 

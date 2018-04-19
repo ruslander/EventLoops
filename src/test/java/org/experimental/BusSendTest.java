@@ -14,8 +14,9 @@ public class BusSendTest extends Env {
     @Test
     public void inbound() throws InterruptedException, IOException {
         String kfk = CLUSTER.getKafkaConnect();
+        String zk = CLUSTER.getZookeeperString();
 
-        try(EndpointWire wire = new EndpointWire("stove-control-panel", kfk)){
+        try(EndpointWire wire = new EndpointWire("stove-control-panel", kfk, zk)){
             wire.registerEndpoint("stove-owen", TurnOff.class);
             wire.configure();
 

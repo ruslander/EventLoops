@@ -26,7 +26,7 @@ public class BusReplyTest extends Env {
     @Test
     public void inbound() throws InterruptedException, IOException {
 
-        try(EndpointWire wire = new EndpointWire("c1", CLUSTER.getKafkaConnect())){
+        try(EndpointWire wire = new EndpointWire("c1", CLUSTER.getKafkaConnect(),CLUSTER.getZookeeperString())){
             wire.registerHandler(Ping.class, bus -> message -> bus.reply(new Pong()));
             wire.configure();
 
