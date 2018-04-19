@@ -48,7 +48,7 @@ public class ManagedEventLoop implements Closeable {
             try {
                 List<MessageEnvelope> messages = receiver.receive();
 
-                LOGGER.debug("Poll {}", messages.size());
+                //LOGGER.debug("Poll {}", messages.size());
 
                 for (MessageEnvelope env: messages) {
                     LOGGER.debug("Dispatch to router {}", router.getClass().getSimpleName());

@@ -173,7 +173,7 @@ public class SampleApp extends Env {
         String kfk = CLUSTER.getKafkaConnect();
         String zk = CLUSTER.getZookeeperString();
         try(
-                EndpointWire barista = new EndpointWire("barista", kfk, zk);
+                //EndpointWire barista = new EndpointWire("barista", kfk, zk);
                 EndpointWire cashier = new EndpointWire("cashier", kfk, zk);
                 EndpointWire customer = new EndpointWire("customer", kfk, zk)
         ){
@@ -182,24 +182,24 @@ public class SampleApp extends Env {
             cashier.registerHandler(SubmitPayment.class, b -> m -> cashierSaga.handle(b, m));
             cashier.configure();
 
-            BaristaSaga baristaSaga = new BaristaSaga();
+            /*BaristaSaga baristaSaga = new BaristaSaga();
             barista.subscribeToEndpoint("cashier", PrepareDrink.class, PaymentComplete.class);
             barista.registerHandler(PrepareDrink.class, b -> m -> baristaSaga.handle(b, m));
             barista.registerHandler(PaymentComplete.class, b -> m -> baristaSaga.handle(b, m));
-            barista.configure();
+            barista.configure();*/
 
             CustomerController controller = new CustomerController();
             customer.registerEndpoint("cashier", NewOrder.class);
-            customer.subscribeToEndpoint("barista", DrinkReady.class);
+            //customer.subscribeToEndpoint("barista", DrinkReady.class);
             customer.registerHandler(DrinkReady.class, b -> controller::handle);
             customer.registerHandler(PaymentDue.class, b -> m -> controller.handle(b, m));
             customer.configure();
 
             Thread.sleep(500);
 
-            //controller.buyMeADrink(customer.getMessageBus());
+            controller.buyMeADrink(customer.getMessageBus());
 
-            //Thread.sleep(1000);
+            Thread.sleep(4000);
         }
     }
 }
