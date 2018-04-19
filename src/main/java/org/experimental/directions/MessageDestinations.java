@@ -1,6 +1,6 @@
 package org.experimental.directions;
 
-import org.experimental.EndpointId;
+import org.experimental.runtime.EndpointId;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

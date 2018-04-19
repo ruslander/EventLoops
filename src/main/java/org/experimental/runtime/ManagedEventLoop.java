@@ -25,6 +25,10 @@ public class ManagedEventLoop implements Closeable {
         this.inputTopics = inputTopics;
         this.router = router;
 
+
+    }
+
+    public void start(){
         this.worker = new Thread(this::StartReceiving);
         this.worker.start();
 

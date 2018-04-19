@@ -1,4 +1,4 @@
-package org.experimental;
+package org.experimental.runtime;
 
 public class EndpointId {
     private String id;

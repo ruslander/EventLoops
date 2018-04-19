@@ -4,6 +4,7 @@ import org.experimental.pipeline.HandleMessages;
 import org.experimental.pipeline.MessageHandlerTable;
 import org.experimental.pipeline.MessagePipeline;
 import org.experimental.directions.MessageDestinations;
+import org.experimental.runtime.EndpointId;
 import org.experimental.transport.KafkaMessageSender;
 import org.testng.Assert;
 import org.testng.annotations.Test;

@@ -1,6 +1,6 @@
 package org.experimental.pipeline;
 
-import org.experimental.EndpointId;
+import org.experimental.runtime.EndpointId;
 import org.experimental.MessageBus;
 import org.experimental.MessageEnvelope;
 import org.experimental.directions.MessageDestinations;

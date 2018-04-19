@@ -1,5 +1,6 @@
 package org.experimental;
 
+import org.experimental.runtime.EndpointId;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
