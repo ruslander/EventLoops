@@ -46,15 +46,18 @@ public class EndpointWire implements Closeable{
         this.pipeline = new MessagePipeline(table, sender, endpointId, router);
         this.inputTopics = Arrays.asList(endpointId.getInputTopicName());
 
-        subscriptionsEventLoop = newLoop("subs." + endpointId.getInputTopicName(), subscriptions.sources());
-        inputEventLoop = newLoop("main."+ endpointId.getInputTopicName(), inputTopics);
     }
 
     public void configure(){
 
+        LOGGER.info("{} subscriptions [{}]", endpointId, String.join(",", subscriptions.sources()));
+
         createTopic(endpointId.getInputTopicName(), 1, 1, new Properties());
         createTopic(endpointId.getEventsTopicName(), 1, 1, new Properties());
         createTopic(endpointId.getErrorsTopicName(), 1, 1, new Properties());
+
+        subscriptionsEventLoop = newLoop("subs." + endpointId.getInputTopicName(), subscriptions.sources());
+        inputEventLoop = newLoop("main."+ endpointId.getInputTopicName(), inputTopics);
 
         if(!subscriptions.sources().isEmpty())
             subscriptionsEventLoop.start();

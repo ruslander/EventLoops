@@ -27,6 +27,9 @@ public class ManagedEventLoop implements Closeable {
     }
 
     public void start(){
+        if(inputTopics.isEmpty())
+            throw new RuntimeException("Subscription with 0 topics is not allowed for " + name);
+
         this.worker = new Thread(this::StartReceiving);
         this.worker.start();
 

@@ -21,6 +21,9 @@ public class KafkaMessageReceiver {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaMessageReceiver.class);
 
     public KafkaMessageReceiver(String broker, List<String> topics) {
+
+
+
         this.topics = topics;
         props = new Properties();
         props.put("bootstrap.servers", broker);
