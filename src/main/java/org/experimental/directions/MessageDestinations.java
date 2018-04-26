@@ -9,7 +9,7 @@ import java.util.List;
 
 public class MessageDestinations {
 
-    HashMap<Type, List<String>> destinations = new HashMap<>();
+    public HashMap<Class<?>, List<String>> destinations = new HashMap<>();
 
     public void registerEndpoint(String endpointId, Class<?> ... aClass) {
         for(Class<?> cl : aClass){

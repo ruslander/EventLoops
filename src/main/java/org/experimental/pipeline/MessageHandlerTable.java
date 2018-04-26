@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 public class MessageHandlerTable {
 
-    private Map<Class<?>, Function<MessageBus, HandleMessages<?>>> handlers = new HashMap<>();
+    public Map<Class<?>, Function<MessageBus, HandleMessages<?>>> handlers = new HashMap<>();
 
     public HandleMessages<Object> getHandlers(MessageBus bus, Object message){
 

@@ -7,6 +7,7 @@ import kafka.utils.ZkUtils;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.ZkConnection;
 import org.experimental.MessageBus;
+import org.experimental.diagnostics.ConfigurationInspector;
 import org.experimental.directions.MessageDestinations;
 import org.experimental.directions.MessageSubscriptions;
 import org.experimental.pipeline.HandleMessages;
@@ -36,6 +37,8 @@ public class EndpointWire implements Closeable{
     private ManagedEventLoop subscriptionsEventLoop;
     private final List<String> inputTopics;
 
+    private final ConfigurationInspector inspector;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedEventLoop.class);
 
     public EndpointWire(String endpoint,String kafkaConnection, String zookeeper) {
@@ -45,12 +48,12 @@ public class EndpointWire implements Closeable{
         this.zookeeper = zookeeper;
         this.pipeline = new MessagePipeline(table, sender, endpointId, router);
         this.inputTopics = Arrays.asList(endpointId.getInputTopicName());
-
+        this.inspector = new ConfigurationInspector(endpointId);
     }
 
     public void configure(){
 
-        LOGGER.info("{} subscriptions [{}]", endpointId, String.join(",", subscriptions.sources()));
+        //LOGGER.info("{} subscriptions [{}]", endpointId, String.join(",", subscriptions.sources()));
 
         createTopic(endpointId.getInputTopicName(), 1, 1, new Properties());
         createTopic(endpointId.getEventsTopicName(), 1, 1, new Properties());
@@ -64,6 +67,11 @@ public class EndpointWire implements Closeable{
 
         inputEventLoop.start();
         sender.start();
+
+        inspector.inspectHandlers(table);
+        inspector.inspectSubscriptions(subscriptions);
+        inspector.inspectRouting(router);
+        inspector.present();
     }
 
     @Override
@@ -79,7 +87,7 @@ public class EndpointWire implements Closeable{
         return new ManagedEventLoop(name, kafkaConnection, topics, pipeline);
     }
 
-    public void registerEndpoint(String endpointId, Class<?> ... types) {
+    public void registerEndpointRoute(String endpointId, Class<?> ... types) {
         router.registerEndpoint(endpointId, types);
     }
 
@@ -102,7 +110,7 @@ public class EndpointWire implements Closeable{
                             int partitions,
                             int replication,
                             Properties topicConfig) {
-        LOGGER.info("Creating topic { name: {}, partitions: {}, replication: {}, config: {} }",
+        LOGGER.debug("Creating topic { name: {}, partitions: {}, replication: {}, config: {} }",
                 topic, partitions, replication, topicConfig);
         ZkClient zkClient = new ZkClient(
                 zookeeper,

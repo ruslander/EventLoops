@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MessageSubscriptions {
-    HashMap<String, List<Class<?>>> sources = new HashMap<>();
+    public HashMap<String, List<Class<?>>> sources = new HashMap<>();
 
     public void subscribeToEndpoint(String endpointId, Class<?> ... aClass) {
         ArrayList<Class<?>> routes = new ArrayList<>();

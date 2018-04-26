@@ -217,7 +217,7 @@ public class SampleApp extends Env {
             barista.configure();
 
             CustomerController controller = new CustomerController();
-            customer.registerEndpoint("cashier", NewOrder.class);
+            customer.registerEndpointRoute("cashier", NewOrder.class);
             customer.subscribeToEndpoint("barista", DrinkReady.class);
             customer.registerHandler(DrinkReady.class, b -> controller::handle);
             customer.registerHandler(PaymentDue.class, b -> m -> controller.handle(b, m));

@@ -17,7 +17,7 @@ public class BusSendTest extends Env {
         String zk = CLUSTER.getZookeeperString();
 
         try(EndpointWire wire = new EndpointWire("stove-control-panel", kfk, zk)){
-            wire.registerEndpoint("stove-owen", TurnOff.class);
+            wire.registerEndpointRoute("stove-owen", TurnOff.class);
             wire.configure();
 
             MessageBus bus = wire.getMessageBus();
