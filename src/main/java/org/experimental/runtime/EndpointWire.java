@@ -53,25 +53,23 @@ public class EndpointWire implements Closeable{
 
     public void configure(){
 
-        //LOGGER.info("{} subscriptions [{}]", endpointId, String.join(",", subscriptions.sources()));
+        inspector.inspectHandlers(table);
+        inspector.inspectSubscriptions(subscriptions);
+        inspector.inspectRouting(router);
+        inspector.present();
 
         createTopic(endpointId.getInputTopicName(), 1, 1, new Properties());
         createTopic(endpointId.getEventsTopicName(), 1, 1, new Properties());
         createTopic(endpointId.getErrorsTopicName(), 1, 1, new Properties());
 
-        subscriptionsEventLoop = newLoop("subs." + endpointId.getInputTopicName(), subscriptions.sources());
-        inputEventLoop = newLoop("main."+ endpointId.getInputTopicName(), inputTopics);
+        subscriptionsEventLoop = newLoop(endpointId.getInputTopicName() + "-rx", subscriptions.sources());
+        inputEventLoop = newLoop(endpointId.getInputTopicName()+ "-active", inputTopics);
 
         if(!subscriptions.sources().isEmpty())
             subscriptionsEventLoop.start();
 
         inputEventLoop.start();
         sender.start();
-
-        inspector.inspectHandlers(table);
-        inspector.inspectSubscriptions(subscriptions);
-        inspector.inspectRouting(router);
-        inspector.present();
     }
 
     @Override

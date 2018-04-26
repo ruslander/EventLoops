@@ -33,17 +33,17 @@ public class ManagedEventLoop implements Closeable {
         this.worker = new Thread(this::StartReceiving,name);
         this.worker.start();
 
-        LOGGER.info("started loop " + name);
     }
 
     @Override
     public void close(){
         worker.interrupt();
 
-        LOGGER.info("stopped loop for " + name);
     }
 
     public void StartReceiving() {
+        LOGGER.info("started loop");
+
         KafkaMessageReceiver receiver = new KafkaMessageReceiver(kafka, inputTopics);
         receiver.start();
 
@@ -59,6 +59,7 @@ public class ManagedEventLoop implements Closeable {
                     LOGGER.debug("Dispatch completed");
                 }
             } catch (InterruptException e) {
+                LOGGER.info("stopped loop");
                 break;
             } catch (Exception e) {
                 LOGGER.warn("Message processing failed", e);
