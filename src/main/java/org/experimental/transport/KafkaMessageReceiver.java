@@ -21,9 +21,6 @@ public class KafkaMessageReceiver {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaMessageReceiver.class);
 
     public KafkaMessageReceiver(String broker, List<String> topics) {
-
-
-
         this.topics = topics;
         props = new Properties();
         props.put("bootstrap.servers", broker);
@@ -32,7 +29,7 @@ public class KafkaMessageReceiver {
         props.put("auto.commit.interval.ms", "1000");
         props.put("session.timeout.ms", "30000");
         props.put("auto.offset.reset", "earliest");
-        props.put("max.poll.records", "10");
+        props.put("max.poll.records", "1"); /* records to include in 1 poll */
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
         props.put("value.deserializer", "org.experimental.transport.TransportRecordByteSerializer");
     }
