@@ -19,7 +19,7 @@ public class DispatchMessagesToHandlersTest {
 
     MessageEnvelope envelope = new MessageEnvelope(UUID.randomUUID(), "", new HashMap<>(), new Ping());
     KafkaMessageSender sender = mock(KafkaMessageSender.class);
-    MessageBus bus = mock(MessageBus.class);
+    MessageBus bus = mock(UnicastMessageBus.class);
     EndpointId endpointId = new EndpointId("");
     MessageDestinations router = mock(MessageDestinations.class);
 

@@ -62,7 +62,7 @@ public class ManagedEventLoop implements Closeable {
                 LOGGER.info("stopped loop");
                 break;
             } catch (Exception e) {
-                LOGGER.warn("Message processing failed", e);
+                LOGGER.error("Message processing failed", e);
             }
         }
     }
