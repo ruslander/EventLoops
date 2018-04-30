@@ -18,6 +18,11 @@ public class EndpointIdTest {
     }
 
     @Test
+    public void creates_slr() throws Exception {
+        Assert.assertEquals(id.getSlrTopicName(), "component1.slr");
+    }
+
+    @Test
     public void creates_commands() throws Exception {
         Assert.assertEquals(id.getInputTopicName(), "component1");
     }

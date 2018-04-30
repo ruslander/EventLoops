@@ -1,6 +1,7 @@
 package org.experimental.pipeline;
 
 import org.experimental.*;
+import org.experimental.recoverability.ExponentialBackOff;
 import org.experimental.runtime.EndpointId;
 import org.experimental.directions.MessageDestinations;
 import org.experimental.transport.KafkaMessageSender;
@@ -27,32 +28,49 @@ public class MessagePipeline implements DispatchMessagesToHandlers {
 
     @Override
     public void dispatch(MessageEnvelope message) {
-        try{
-            MessageBus slim = netMessageBus(message);
-            UnitOfWork unitOfWork = new UnitOfWork();
-            TransactionalMessageBus messageBus = new TransactionalMessageBus(slim, unitOfWork);
 
-            HandleMessages<Object> handler = this.handlers.getHandlers(messageBus, message.getLocalMessage());
-
-            if(handler == null){
-                String simpleName = message.getLocalMessage().getClass().toString();
-                LOGGER.warn("No handler registered for {}", simpleName);
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try{
+                attemptToProcess(message);
                 return;
-            }
+            }catch (Exception e){
 
-            handler.handle(message.getLocalMessage());
-            unitOfWork.complete();
-        }catch (Exception e){
-            handleFailure(message, e);
-            throw e;
+                LOGGER.warn("FLR attempt#{}", attempt, e);
+
+                try {
+                    Thread.sleep(ExponentialBackOff.nextTimeout(attempt));
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+
+                if(attempt == 2){
+                    scheduleForSlr(message, e);
+                }
+            }
         }
     }
 
-    private void handleFailure(MessageEnvelope message, Exception e) {
-        String errorsTopic = endpointId.getErrorsTopicName();
-        sender.send(Arrays.asList(errorsTopic), message);
+    public void attemptToProcess(MessageEnvelope message) {
+        MessageBus slim = netMessageBus(message);
+        UnitOfWork unitOfWork = new UnitOfWork();
+        TransactionalMessageBus messageBus = new TransactionalMessageBus(slim, unitOfWork);
 
-        LOGGER.info("Forwarded message {} to the error {} topic", message.getUuid(), errorsTopic);
+        HandleMessages<Object> handler = this.handlers.getHandlers(messageBus, message.getLocalMessage());
+
+        if(handler == null){
+            String simpleName = message.getLocalMessage().getClass().toString();
+            LOGGER.warn("No handler registered for {}", simpleName);
+        }
+
+        handler.handle(message.getLocalMessage());
+        unitOfWork.complete();
+    }
+
+    private void scheduleForSlr(MessageEnvelope message, Exception e) {
+        String slrTopic = endpointId.getSlrTopicName();
+        sender.send(Arrays.asList(slrTopic), message);
+
+        LOGGER.info("Schedule message {} for SLR {} topic", message.getUuid(), slrTopic);
     }
 
     public MessageBus netMessageBus(MessageEnvelope message) {

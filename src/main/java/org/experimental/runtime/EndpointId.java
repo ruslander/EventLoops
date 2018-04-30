@@ -19,6 +19,10 @@ public class EndpointId {
         return id;
     }
 
+    public String getSlrTopicName() {
+        return id + ".slr";
+    }
+
     @Override
     public String toString() {
         return id;
