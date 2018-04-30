@@ -38,7 +38,6 @@ public class ManagedEventLoop implements Closeable {
     @Override
     public void close(){
         worker.interrupt();
-
     }
 
     public void StartReceiving() {

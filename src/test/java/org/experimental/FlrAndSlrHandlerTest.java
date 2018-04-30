@@ -47,7 +47,7 @@ public class FlrAndSlrHandlerTest extends Env {
     }
 
     @Test
-    public void attempt_2_succeeds_topic() throws InterruptedException, IOException {
+    public void attempt_2_succeeds_topic() throws Exception {
 
         AtomicInteger cnt = new AtomicInteger();
 
@@ -62,8 +62,9 @@ public class FlrAndSlrHandlerTest extends Env {
 
             Thread.sleep(4000);
 
-            Assert.assertEquals(cnt.get(), 3);
-            Assert.assertEquals(CLUSTER.readAllMessages("at2.slr").size(), 0);
         }
+
+        Assert.assertEquals(cnt.get(), 3);
+        Assert.assertEquals(CLUSTER.readAllMessages("at2.slr").size(), 0);
     }
 }

@@ -34,6 +34,7 @@ public class EndpointWire implements Closeable{
     private final MessageSubscriptions subscriptions = new MessageSubscriptions();
     private final MessagePipeline pipeline;
     private ManagedEventLoop inputEventLoop;
+    private ManagedEventLoop slrEventLoop;
     private ManagedEventLoop subscriptionsEventLoop;
     private final List<String> inputTopics;
 
@@ -60,15 +61,18 @@ public class EndpointWire implements Closeable{
 
         createTopic(endpointId.getInputTopicName(), 1, 1, new Properties());
         createTopic(endpointId.getEventsTopicName(), 1, 1, new Properties());
+        createTopic(endpointId.getSlrTopicName(), 1, 1, new Properties());
         createTopic(endpointId.getErrorsTopicName(), 1, 1, new Properties());
 
-        subscriptionsEventLoop = newLoop(endpointId.getInputTopicName() + "-rx", subscriptions.sources());
-        inputEventLoop = newLoop(endpointId.getInputTopicName()+ "-active", inputTopics);
+        subscriptionsEventLoop = newLoop(endpointId.getInputTopicName() + "-sub", subscriptions.sources());
+        slrEventLoop = newLoop(endpointId.getInputTopicName()+ "-slr", Arrays.asList(endpointId.getSlrTopicName()));
+        inputEventLoop = newLoop(endpointId.getInputTopicName()+ "-in", inputTopics);
 
         if(!subscriptions.sources().isEmpty())
             subscriptionsEventLoop.start();
 
         inputEventLoop.start();
+        slrEventLoop.start();
         sender.start();
     }
 
@@ -78,6 +82,7 @@ public class EndpointWire implements Closeable{
             subscriptionsEventLoop.close();
 
         inputEventLoop.close();
+        slrEventLoop.close();
         sender.stop();
     }
 
