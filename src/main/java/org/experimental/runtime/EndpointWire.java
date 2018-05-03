@@ -13,6 +13,9 @@ import org.experimental.directions.MessageSubscriptions;
 import org.experimental.pipeline.HandleMessages;
 import org.experimental.pipeline.MessageHandlerTable;
 import org.experimental.pipeline.MessagePipeline;
+import org.experimental.recoverability.BackOff;
+import org.experimental.recoverability.Dispatcher;
+import org.experimental.recoverability.ManagedEventLoop;
 import org.experimental.transport.KafkaMessageSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +41,9 @@ public class EndpointWire implements Closeable{
     private ManagedEventLoop subscriptionsEventLoop;
     private final List<String> inputTopics;
 
+    private final BackOff flrBackoff = new BackOff(100L);
+    private final BackOff slrBackoff = new BackOff(1500L);
+
     private final ConfigurationInspector inspector;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagedEventLoop.class);
@@ -57,16 +63,23 @@ public class EndpointWire implements Closeable{
         inspector.inspectHandlers(table);
         inspector.inspectSubscriptions(subscriptions);
         inspector.inspectRouting(router);
+        inspector.inspectFlr(flrBackoff);
+        inspector.inspectSlr(slrBackoff);
+
         inspector.present();
+
 
         createTopic(endpointId.getInputTopicName(), 1, 1, new Properties());
         createTopic(endpointId.getEventsTopicName(), 1, 1, new Properties());
         createTopic(endpointId.getSlrTopicName(), 1, 1, new Properties());
         createTopic(endpointId.getErrorsTopicName(), 1, 1, new Properties());
 
-        subscriptionsEventLoop = newLoop(endpointId.getInputTopicName() + "-sub", subscriptions.sources());
-        slrEventLoop = newLoop(endpointId.getInputTopicName()+ "-slr", Arrays.asList(endpointId.getSlrTopicName()));
-        inputEventLoop = newLoop(endpointId.getInputTopicName()+ "-in", inputTopics);
+        subscriptionsEventLoop = newLoopWithSlr(endpointId.getInputTopicName() + "-sub", subscriptions.sources());
+        inputEventLoop = newLoopWithSlr(endpointId.getInputTopicName()+ "-in", inputTopics);
+
+        slrEventLoop = newLoopWithError(endpointId.getInputTopicName()+ "-slr", Arrays.asList(endpointId.getSlrTopicName()));
+
+
 
         if(!subscriptions.sources().isEmpty())
             subscriptionsEventLoop.start();
@@ -86,8 +99,14 @@ public class EndpointWire implements Closeable{
         sender.stop();
     }
 
-    private ManagedEventLoop newLoop(String name, List<String> topics){
-        return new ManagedEventLoop(name, kafkaConnection, topics, pipeline);
+    private ManagedEventLoop newLoopWithSlr(String name, List<String> topics){
+        Dispatcher forwardSlr = Dispatcher.withSrl(pipeline, sender, endpointId, flrBackoff);
+        return new ManagedEventLoop(name, kafkaConnection, topics, forwardSlr);
+    }
+
+    private ManagedEventLoop newLoopWithError(String name, List<String> topics){
+        Dispatcher forwardError = Dispatcher.withError(pipeline, sender, endpointId, slrBackoff);
+        return new ManagedEventLoop(name, kafkaConnection, topics, forwardError);
     }
 
     public void registerEndpointRoute(String endpointId, Class<?> ... types) {

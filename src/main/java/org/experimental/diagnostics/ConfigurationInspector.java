@@ -3,6 +3,8 @@ package org.experimental.diagnostics;
 import org.experimental.directions.MessageDestinations;
 import org.experimental.directions.MessageSubscriptions;
 import org.experimental.pipeline.MessageHandlerTable;
+import org.experimental.recoverability.BackOff;
+import org.experimental.recoverability.Dispatcher;
 import org.experimental.runtime.EndpointId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,5 +54,13 @@ public class ConfigurationInspector {
         for (Map.Entry<Class<?>, List<String>> cl: router.destinations.entrySet()) {
             detailsAcc.append("\n\t\t " + String.join(",", cl.getValue()) + " " +cl.getKey().getSimpleName());
         }
+    }
+
+    public void inspectFlr(BackOff backoff) {
+        detailsAcc.append("\n\t FLR:" + backoff.getDurations());
+    }
+
+    public void inspectSlr(BackOff backoff) {
+        detailsAcc.append("\n\t SLR:" + backoff.getDurations());
     }
 }

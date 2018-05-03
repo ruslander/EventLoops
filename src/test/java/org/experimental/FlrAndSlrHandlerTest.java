@@ -1,13 +1,10 @@
 package org.experimental;
 
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.experimental.pipeline.HandleMessages;
 import org.experimental.runtime.EndpointWire;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class FlrAndSlrHandlerTest extends Env {
@@ -30,19 +27,19 @@ public class FlrAndSlrHandlerTest extends Env {
 
         AtomicInteger cnt = new AtomicInteger();
 
-        try(EndpointWire wire = new EndpointWire("at3", CLUSTER.getKafkaConnect(),CLUSTER.getZookeeperString())){
+        try(EndpointWire wire = wire("at3")){
             wire.registerHandler(Ping.class, bus -> message -> {
                 cnt.incrementAndGet();
                 throw new RuntimeException("intentional");
             });
             wire.configure();
 
-            CLUSTER.sendMessages(new ProducerRecord<>("at3", env));
+            send("at3", env);
 
-            Thread.sleep(4000);
+            Thread.sleep(6000);
 
-            Assert.assertEquals(cnt.get(), 3);
-            Assert.assertEquals(CLUSTER.readAllMessages("at3.slr").size(), 1);
+            Assert.assertEquals(cnt.get(), 5);
+            Assert.assertEquals(countMessages("at3.errors"), 1);
         }
     }
 
@@ -51,20 +48,19 @@ public class FlrAndSlrHandlerTest extends Env {
 
         AtomicInteger cnt = new AtomicInteger();
 
-        try(EndpointWire wire = new EndpointWire("at2", CLUSTER.getKafkaConnect(),CLUSTER.getZookeeperString())){
+        try(EndpointWire wire = wire("at2")){
             wire.registerHandler(Ping.class, bus -> message -> {
                 int val = cnt.incrementAndGet();
                 if(val < 3) throw new RuntimeException("intentional");
             });
             wire.configure();
 
-            CLUSTER.sendMessages(new ProducerRecord<>("at2", env));
+            send("at2", env);
 
             Thread.sleep(4000);
-
         }
 
         Assert.assertEquals(cnt.get(), 3);
-        Assert.assertEquals(CLUSTER.readAllMessages("at2.slr").size(), 0);
+        Assert.assertEquals(countMessages("at2.error"), 1);
     }
 }

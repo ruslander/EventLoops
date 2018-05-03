@@ -1,4 +1,4 @@
-package org.experimental.runtime;
+package org.experimental.recoverability;
 
 import org.apache.kafka.common.errors.InterruptException;
 import org.experimental.MessageEnvelope;
@@ -49,8 +49,6 @@ public class ManagedEventLoop implements Closeable {
         while (true){
             try {
                 List<MessageEnvelope> messages = receiver.receive();
-
-                //LOGGER.debug("Poll {}", messages.size());
 
                 for (MessageEnvelope env: messages) {
                     LOGGER.debug("Dispatch to router {}", router.getClass().getSimpleName());

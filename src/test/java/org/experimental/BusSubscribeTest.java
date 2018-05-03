@@ -1,19 +1,11 @@
 package org.experimental;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.experimental.pipeline.MessageHandlerTable;
-import org.experimental.pipeline.MessagePipeline;
-import org.experimental.runtime.EndpointId;
 import org.experimental.runtime.EndpointWire;
-import org.experimental.runtime.ManagedEventLoop;
-import org.experimental.directions.MessageSubscriptions;
-import org.experimental.directions.MessageDestinations;
-import org.experimental.transport.KafkaMessageSender;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class BusSubscribeTest extends Env {
@@ -33,13 +25,13 @@ public class BusSubscribeTest extends Env {
     @Test
     public void inbound() throws InterruptedException, IOException {
 
-        try(EndpointWire wire = new EndpointWire("c1", CLUSTER.getKafkaConnect(), CLUSTER.getZookeeperString())){
+        try(EndpointWire wire = wire("c1")){
             AtomicInteger cnt = new AtomicInteger();
             wire.subscribeToEndpoint("u1", Tick.class);
             wire.registerHandler(Tick.class, bus -> message -> cnt.incrementAndGet());
             wire.configure();
 
-            CLUSTER.sendMessages(new ProducerRecord<>("u1.events", env));
+            send("u1.events", env);
 
             Thread.sleep(4000);
 

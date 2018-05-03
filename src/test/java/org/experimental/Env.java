@@ -2,6 +2,7 @@ package org.experimental;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.experimental.lab.SingleNodeKafkaCluster;
+import org.experimental.runtime.EndpointWire;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 
@@ -30,5 +31,17 @@ public class Env {
     @AfterSuite
     public void release(){
         CLUSTER.shutdown();
+    }
+
+    protected int countMessages(String topicName){
+        return CLUSTER.readAllMessages(topicName).size();
+    }
+
+    protected void send(String topic, String message){
+        CLUSTER.sendMessages(new ProducerRecord<>(topic, message));
+    }
+
+    protected EndpointWire wire(String name){
+        return new EndpointWire(name, CLUSTER.getKafkaConnect(),CLUSTER.getZookeeperString());
     }
 }

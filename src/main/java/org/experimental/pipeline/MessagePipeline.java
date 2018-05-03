@@ -1,7 +1,7 @@
 package org.experimental.pipeline;
 
 import org.experimental.*;
-import org.experimental.recoverability.ExponentialBackOff;
+import org.experimental.recoverability.BackOff;
 import org.experimental.runtime.EndpointId;
 import org.experimental.directions.MessageDestinations;
 import org.experimental.transport.KafkaMessageSender;
@@ -28,29 +28,6 @@ public class MessagePipeline implements DispatchMessagesToHandlers {
 
     @Override
     public void dispatch(MessageEnvelope message) {
-
-        for (int attempt = 0; attempt < 3; attempt++) {
-            try{
-                attemptToProcess(message);
-                return;
-            }catch (Exception e){
-
-                LOGGER.warn("FLR attempt#{}", attempt, e);
-
-                try {
-                    Thread.sleep(ExponentialBackOff.nextTimeout(attempt));
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
-
-                if(attempt == 2){
-                    scheduleForSlr(message, e);
-                }
-            }
-        }
-    }
-
-    public void attemptToProcess(MessageEnvelope message) {
         MessageBus slim = netMessageBus(message);
         UnitOfWork unitOfWork = new UnitOfWork();
         TransactionalMessageBus messageBus = new TransactionalMessageBus(slim, unitOfWork);
@@ -66,12 +43,6 @@ public class MessagePipeline implements DispatchMessagesToHandlers {
         unitOfWork.complete();
     }
 
-    private void scheduleForSlr(MessageEnvelope message, Exception e) {
-        String slrTopic = endpointId.getSlrTopicName();
-        sender.send(Arrays.asList(slrTopic), message);
-
-        LOGGER.info("Schedule message {} for SLR {} topic", message.getUuid(), slrTopic);
-    }
 
     public MessageBus netMessageBus(MessageEnvelope message) {
         return new UnicastMessageBus(sender, message, endpointId, router);

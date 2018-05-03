@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class KafkaMessageSender  {
 
@@ -17,6 +18,7 @@ public class KafkaMessageSender  {
     private KafkaProducer<String, TransportRecord> producer = null;
     private final Properties props;
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaMessageSender.class);
+    private final AtomicBoolean running = new AtomicBoolean(true);
 
     private MessageEnvelopeSerializer serializer = new MessageEnvelopeSerializer();
 
@@ -38,6 +40,7 @@ public class KafkaMessageSender  {
 
     public void stop() {
         producer.close();
+        running.set(false);
     }
 
     public void send(List<String> dest, MessageEnvelope envelope) {
@@ -46,6 +49,9 @@ public class KafkaMessageSender  {
                 ProducerRecord<String, TransportRecord> record = serializer.envelopeToRecord(envelope, topic);
 
                 LOGGER.debug("Send to [{}] {}", topic, envelope.getLocalMessage().getClass().getSimpleName());
+
+                if(!running.get())
+                    return;
 
                 producer.send(record).get();
                 producer.flush();

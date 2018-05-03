@@ -3,7 +3,7 @@ package org.experimental;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.experimental.lab.SingleNodeKafkaCluster;
 import org.experimental.pipeline.DispatchMessagesToHandlers;
-import org.experimental.runtime.ManagedEventLoop;
+import org.experimental.recoverability.ManagedEventLoop;
 import org.testng.Assert;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
@@ -14,31 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ManagedEventLoopTest {
-
-    public static SingleNodeKafkaCluster CLUSTER;
-
-    @BeforeSuite
-    public void boot() throws IOException {
-        CLUSTER = new SingleNodeKafkaCluster();
-        CLUSTER.startup();
-
-        CLUSTER.sendMessages(new ProducerRecord<>("ready", "yes"));
-
-        while (true){
-            List<String> ready = CLUSTER.readAllMessages("ready");
-
-            if(ready.size() != 0)
-                break;
-        }
-
-        Env.CLUSTER = CLUSTER;
-    }
-
-    @AfterSuite
-    public void release(){
-        CLUSTER.shutdown();
-    }
+public class ManagedEventLoopTest extends Env {
 
     private String env = "{" +
             "\"uuid\":\"9fb046d0-4318-4f2e-8ec3-0152449ebe7d\"," +
@@ -65,6 +41,8 @@ public class ManagedEventLoopTest {
         };
 
         try(ManagedEventLoop loop = new ManagedEventLoop(loopName, kfk, inputTopics, handlers)){
+
+            loop.start();
 
             CLUSTER.sendMessages(new ProducerRecord<>("c1", env));
 
