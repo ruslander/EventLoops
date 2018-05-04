@@ -48,13 +48,16 @@ public class ManagedEventLoop implements Closeable {
 
         while (true){
             try {
-                List<MessageEnvelope> messages = receiver.receive();
+                MessageEnvelope env = receiver.receive();
 
-                for (MessageEnvelope env: messages) {
-                    LOGGER.debug("Dispatch to router {}", router.getClass().getSimpleName());
-                    router.dispatch(env);
-                    LOGGER.debug("Dispatch completed");
-                }
+                if(env == null)
+                    continue;
+
+                LOGGER.debug("Dispatch to router {}", router.getClass().getSimpleName());
+                router.dispatch(env);
+                receiver.commit(env);
+                LOGGER.debug("Dispatch completed");
+
             } catch (InterruptException e) {
                 LOGGER.info("stopped loop");
                 break;

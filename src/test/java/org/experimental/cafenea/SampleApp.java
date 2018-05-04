@@ -227,7 +227,7 @@ public class SampleApp extends Env {
 
             controller.buyMeADrink(customer.getMessageBus());
 
-            Thread.sleep(4000);
+            Thread.sleep(8000);
         }
     }
 }

@@ -3,13 +3,13 @@ package org.experimental.transport;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
 import org.experimental.MessageEnvelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 public class KafkaMessageReceiver {
     private  KafkaConsumer<String, TransportRecord> consumer;
@@ -25,7 +25,7 @@ public class KafkaMessageReceiver {
         props = new Properties();
         props.put("bootstrap.servers", broker);
         props.put("group.id", "test");
-        props.put("enable.auto.commit", "true");
+        props.put("enable.auto.commit", "false");
         props.put("auto.commit.interval.ms", "1000");
         props.put("session.timeout.ms", "30000");
         props.put("auto.offset.reset", "earliest");
@@ -45,15 +45,27 @@ public class KafkaMessageReceiver {
         consumer.close();
     }
 
-    public List<MessageEnvelope> receive() throws Exception {
-        List<MessageEnvelope> result = new ArrayList<>();
+    public MessageEnvelope receive() throws Exception {
 
         ConsumerRecords<String, TransportRecord> records = consumer.poll(500);
+
         for (ConsumerRecord<String, TransportRecord> record : records) {
             MessageEnvelope envelope = serializer.recordToEnvelope(record.value());
-            result.add(envelope);
+            envelope.setOffset(recordOffset(record));
+
+            return envelope;
         }
 
-        return result;
+        return null;
+    }
+
+    HashMap<TopicPartition, OffsetAndMetadata> recordOffset(ConsumerRecord<String, TransportRecord> record) {
+        HashMap<TopicPartition, OffsetAndMetadata> offsets = new HashMap<>();
+        offsets.put(new TopicPartition(record.topic(), record.partition()), new OffsetAndMetadata(record.offset()+1));
+        return offsets;
+    }
+
+    public void commit(MessageEnvelope message){
+        consumer.commitSync((Map<TopicPartition, OffsetAndMetadata>) message.getOffset());
     }
 }
